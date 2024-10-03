@@ -1,10 +1,31 @@
+Declare @tblNmSearch nvarchar(20) = 'ORDER_PROC'
+Set @tblNmSearch = '%'+ @tblNmSearch + '%'
+
+
+
 Select 
 TBL.TABLE_ID,
 TBL.TABLE_NAME,
 TBL.TBL_DESCRIPTOR,
 TBL.TABLE_INTRODUCTION,
 TBL.EXTRACT_FILENAME,
-TBL.DEPENDENT_INI,
+TBL.DEPENDENT_INI
+from Clarity.dbo.CLARITY_TBL TBL
+where TBL.IS_EXTRACTED_YN = 'Y'
+AND TBL.TABLE_NAME like @tblNmSearch
+AND TBL.TABLE_ID like 'E%'
+AND (TBL.DEPRECATED_YN is null or  TBL.DEPRECATED_YN = 'N')
+Order by TBL.TABLE_NAME
+
+
+Select 
+--TBL.TABLE_ID,
+TBL.TABLE_NAME,
+--TBL.TBL_DESCRIPTOR,
+--TBL.TABLE_INTRODUCTION,
+--TBL.EXTRACT_FILENAME,
+--TBL.DEPENDENT_INI,
+COLSQL = Col.COLUMN_NAME + ', ',
 COL.COLUMN_ID,
 COL.COLUMN_NAME,
 COL.DESCRIPTION,
@@ -19,9 +40,24 @@ from Clarity.dbo.CLARITY_TBL TBL
 JOIN CLARITY.dbo.CLARITY_COL COL on TBL.TABLE_ID = COL.TABLE_ID
 LEFT JOIN CLARITY.dbo.CLARITY_COL_INIITM COLList on COL.COLUMN_ID = COLList.COLUMN_ID
 where TBL.IS_EXTRACTED_YN = 'Y'
-AND TBL.TABLE_NAME like 'REFERRAL%'
+AND TBL.TABLE_NAME like @tblNmSearch
 AND TBL.TABLE_ID like 'E%'
 --AND TBL.DEPENDENT_INI = 'RFL'
 AND COLUMN_NAME not in ('CM_PHY_OWNER_ID','CM_LOG_OWNER_ID')
+AND (TBL.DEPRECATED_YN is null or  TBL.DEPRECATED_YN = 'N')
 Order by TBL.TABLE_NAME
 
+
+
+Select 
+T.object_id,
+T.name,
+C.name,
+C.column_id,
+C.system_type_id,
+SQLQ = C.name + ', '
+From Sys.tables T 
+Join Sys.columns C on T.object_id = C.object_id
+Where 1=1
+and T.name Like @tblNmSearch
+AND C.name not in  ('CM_PHY_OWNER_ID','CM_LOG_OWNER_ID')
